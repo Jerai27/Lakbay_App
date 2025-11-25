@@ -5,7 +5,7 @@ Proponents:
 - Jerlyn P. Corpuz
 - Arjean G. Logrosa
 - Aime P. Mayormita
-- 
+  
 PROJECT DESCRIPTION:
 The Travel Planning and Budgeting App (Lakbay) is a Flutter-based mobile application that simplifies trip planning and group coordination.
 
