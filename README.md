@@ -2,10 +2,10 @@
 
 Proponents:
 
-Stephanie Kate O. Losabia
-Jerlyn P. Corpuz
-Arjean G. Logrosa
-Aime P. Mayormita
+- Stephanie Kate O. Losabia
+- Jerlyn P. Corpuz
+- Arjean G. Logrosa
+- Aime P. Mayormita
 
 ## Travel Planning & Budgeting App
 
