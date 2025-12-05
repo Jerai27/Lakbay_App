@@ -1,5 +1,12 @@
 # lakbay_app
 
+##Proponents:
+
+Stephanie Kate O. Losabia
+Jerlyn P. Corpuz
+Arjean G. Logrosa
+Aime P. Mayormita
+
 ## Travel Planning & Budgeting App
 
 Effortlessly plan, organize, and manage your group trips with our mobile app! Designed with Flutter and powered by Firebase, this app lets users create detailed travel plans, schedule activities, manage companions, track budgets, and collaborate in real time.
