@@ -1,6 +1,6 @@
 # lakbay_app
 
-##Proponents:
+Proponents:
 
 Stephanie Kate O. Losabia
 Jerlyn P. Corpuz
