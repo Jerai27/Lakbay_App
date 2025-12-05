@@ -20,7 +20,7 @@ class SignUpScreen extends StatelessWidget {
           children: [
             Container(
               padding: EdgeInsets.only(top: 40.h, bottom: 20.h),
-              child: SvgPicture.asset('assets/images/lakbay_logo.svg',
+              child: SvgPicture.asset('assets/images/Lakbay_Logo.svg',
                   height: 90.h, color: Colors.white.withOpacity(0.9)),
             ),
             Text('Create Account',

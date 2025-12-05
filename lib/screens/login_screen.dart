@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/app_colors.dart';
 import '../widgets/custom_textfield.dart';
 import 'signup_screen.dart';
+import '../widgets/forgot_password_modal.dart';
+
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -72,14 +74,20 @@ class LoginScreen extends StatelessWidget {
                       ),
 
                       Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text('Forgot Password?',
-                              style: GoogleFonts.poppins(
-                                  color: AppColors.brownPrimary)),
-                        ),
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const ForgotPasswordModal(),
+                          );
+                        },
+                        child: Text('Forgot Password?',
+                          style: GoogleFonts.poppins(
+                          color: AppColors.brownPrimary)),
                       ),
+                    ),
+
 
                       SizedBox(height: 20.h),
                       ElevatedButton(

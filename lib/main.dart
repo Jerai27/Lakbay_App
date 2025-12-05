@@ -5,16 +5,16 @@ import 'package:get/get.dart';
 import 'screens/login_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MyApp()); // No SystemChrome needed
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(375, 812), // Matches your Figma perfectly
+      designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
@@ -22,9 +22,17 @@ class MyApp extends StatelessWidget {
           title: 'Lakbay',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
+            brightness: Brightness.light,
+            fontFamily: 'Poppins',
+            useMaterial3: true,
+            scaffoldBackgroundColor: Colors.white,
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
             fontFamily: 'Poppins',
             useMaterial3: true,
           ),
+          themeMode: ThemeMode.system, // Follow device setting
           home: const LoginScreen(),
         );
       },
