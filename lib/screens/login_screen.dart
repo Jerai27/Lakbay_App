@@ -8,6 +8,7 @@ import '../core/app_colors.dart';
 import '../widgets/custom_textfield.dart';
 import 'signup_screen.dart';
 import '../widgets/forgot_password_modal.dart';
+import 'home_screen.dart';
 
 
 class LoginScreen extends StatelessWidget {
@@ -89,23 +90,24 @@ class LoginScreen extends StatelessWidget {
                     ),
 
 
-                      SizedBox(height: 20.h),
-                      ElevatedButton(
-                        onPressed: () {
-                          // TODO: Login logic
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.brownPrimary,
-                          minimumSize: Size(double.infinity, 60.h),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.r)),
-                        ),
-                        child: Text('Sign In',
-                            style: GoogleFonts.poppins(
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white)),
+                     ElevatedButton(
+                      onPressed: () {
+                        String userEmail = 'stefani'; // Get from your email controller later
+                        Get.to(() => HomeScreen(userName: userEmail));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brownPrimary,
+                        minimumSize: Size(double.infinity, 60.h),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.r)),
                       ),
+                      child: Text('Sign In',
+                          style: GoogleFonts.poppins(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white)),
+                    ),
+
 
                       SizedBox(height: 30.h),
                       Text('Or continue with',

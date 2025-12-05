@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
+
 
 void main() {
   runApp(const MyApp()); // No SystemChrome needed
@@ -33,7 +35,8 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
           ),
           themeMode: ThemeMode.system, // Follow device setting
-          home: const LoginScreen(),
+          home: const HomeScreen(),
+          // home: const LoginScreen(), 
         );
       },
     );
