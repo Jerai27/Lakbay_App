@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/app_colors.dart';
@@ -22,13 +23,13 @@ class _HomeScreenState extends State<HomeScreen> {
   late String displayName;
   late List<Trip> trips;
 
-  @override
+@override
   void initState() {
     super.initState();
     displayName = widget.userName ?? 'Stefani';
     trips = [];
   }
-
+  
   void _showCreateTripModal() {
     showDialog(
       context: context,
@@ -51,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Container(
               color: AppColors.brownPrimary,
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 35.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

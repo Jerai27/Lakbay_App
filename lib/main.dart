@@ -1,13 +1,25 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
-
 
 void main() {
-  runApp(const MyApp()); // No SystemChrome needed
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set status bar style IMMEDIATELY before app starts
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: Color(0xFFF5F5F5),  // ← Light gray/white background
+      statusBarIconBrightness: Brightness.dark,  // ← Dark icons
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
+  
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -16,29 +28,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(375, 812),
+      designSize: const Size(390, 844),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return GetMaterialApp(
-          title: 'Lakbay',
-          debugShowCheckedModeBanner: false,
+        return MaterialApp(
+          title: 'Lakbay App',
           theme: ThemeData(
-            brightness: Brightness.light,
-            fontFamily: 'Poppins',
             useMaterial3: true,
-            scaffoldBackgroundColor: Colors.white,
+            brightness: Brightness.light,
           ),
           darkTheme: ThemeData(
-            brightness: Brightness.dark,
-            fontFamily: 'Poppins',
             useMaterial3: true,
+            brightness: Brightness.light,
           ),
-          themeMode: ThemeMode.system, // Follow device setting
-          home: const HomeScreen(),
-          // home: const LoginScreen(), 
+          themeMode: ThemeMode.light,
+          home: child,
         );
       },
+      child: LoginScreen(),
     );
   }
 }
