@@ -4,14 +4,18 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/app_colors.dart';
 import '../models/trip_model.dart';
 
+
 class CreateTripModal extends StatefulWidget {
   final Function(Trip) onTripCreated;
 
+
   const CreateTripModal({super.key, required this.onTripCreated});
+
 
   @override
   State<CreateTripModal> createState() => _CreateTripModalState();
 }
+
 
 class _CreateTripModalState extends State<CreateTripModal> {
   final TextEditingController titleController = TextEditingController();
@@ -19,6 +23,10 @@ class _CreateTripModalState extends State<CreateTripModal> {
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
   final TextEditingController budgetController = TextEditingController();
+
+  DateTime? _selectedStartDate;
+  DateTime? _selectedEndDate;
+
 
   @override
   void dispose() {
@@ -30,19 +38,57 @@ class _CreateTripModalState extends State<CreateTripModal> {
     super.dispose();
   }
 
-  Future<void> _selectDate(TextEditingController controller) async {
+
+  // ← ADD THIS METHOD
+  Future<void> _selectStartDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedStartDate ?? DateTime.now(),
       firstDate: DateTime(2024),
       lastDate: DateTime(2030),
     );
     if (picked != null) {
-      controller.text = '${picked.month}/${picked.day}/${picked.year}';
+      setState(() {
+        _selectedStartDate = picked;
+        startDateController.text = '${picked.month}/${picked.day}/${picked.year}';
+        
+        // Reset end date if it's before start date
+        if (_selectedEndDate != null && _selectedEndDate!.isBefore(picked)) {
+          _selectedEndDate = null;
+          endDateController.text = '';
+        }
+      });
     }
   }
 
-    void _createTrip() {
+  // ← ADD THIS METHOD
+  Future<void> _selectEndDate() async {
+    // End date picker should not allow dates before start date
+    DateTime firstSelectableDate = _selectedStartDate ?? DateTime.now();
+    
+    if (_selectedStartDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select start date first')),
+      );
+      return;
+    }
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedEndDate ?? _selectedStartDate!.add(Duration(days: 1)),
+      firstDate: _selectedStartDate!, // ← Bound to start date
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedEndDate = picked;
+        endDateController.text = '${picked.month}/${picked.day}/${picked.year}';
+      });
+    }
+  }
+
+
+  void _createTrip() {
     if (titleController.text.isEmpty ||
         destinationController.text.isEmpty ||
         startDateController.text.isEmpty ||
@@ -50,6 +96,17 @@ class _CreateTripModalState extends State<CreateTripModal> {
         budgetController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
+    // ← ADD THIS VALIDATION
+    if (_selectedEndDate!.isBefore(_selectedStartDate!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('⚠️ End date must be the same or after start date'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -66,6 +123,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
         image: 'assets/images/default_trip.jpg',
       );
 
+
       widget.onTripCreated(newTrip);
       Navigator.pop(context);
     } catch (e) {
@@ -74,6 +132,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +181,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                 ),
               ),
 
+
               // Body
               Padding(
                 padding: EdgeInsets.all(24.w),
@@ -160,7 +220,9 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       style: GoogleFonts.poppins(fontSize: 14.sp),
                     ),
 
+
                     SizedBox(height: 20.h),
+
 
                     // Destination
                     Text(
@@ -195,7 +257,9 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       style: GoogleFonts.poppins(fontSize: 14.sp),
                     ),
 
+
                     SizedBox(height: 20.h),
+
 
                     // Start & End Dates
                     Row(
@@ -215,7 +279,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                               TextField(
                                 controller: startDateController,
                                 readOnly: true,
-                                onTap: () => _selectDate(startDateController),
+                                onTap: () => _selectStartDate(),
                                 decoration: InputDecoration(
                                   hintText: 'Select date',
                                   hintStyle: GoogleFonts.poppins(
@@ -256,7 +320,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                               TextField(
                                 controller: endDateController,
                                 readOnly: true,
-                                onTap: () => _selectDate(endDateController),
+                                onTap: () => _selectEndDate(),
                                 decoration: InputDecoration(
                                   hintText: 'Select date',
                                   hintStyle: GoogleFonts.poppins(
@@ -284,7 +348,9 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       ],
                     ),
 
+
                     SizedBox(height: 20.h),
+
 
                   // Budget
                     Text(
@@ -330,7 +396,9 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       style: GoogleFonts.poppins(fontSize: 14.sp),
                     ),
 
+
                     SizedBox(height: 24.h),
+
 
                     // Start Adventure Button
                     SizedBox(

@@ -7,6 +7,7 @@ import '../models/activity_model.dart';
 import '../widgets/edit_trip_modal.dart';
 import '../widgets/edit_activity_modal.dart';
 
+
 class TripDetailScreen extends StatefulWidget {
   final Trip trip;
 
@@ -16,15 +17,42 @@ class TripDetailScreen extends StatefulWidget {
   State<TripDetailScreen> createState() => _TripDetailScreenState();
 }
 
+
 class _TripDetailScreenState extends State<TripDetailScreen> {
   late String selectedTab;
   late List<Activity> activities;
+  late Trip currentTrip;
 
   @override
   void initState() {
     super.initState();
     selectedTab = 'Itinerary';
     activities = [];
+    currentTrip = widget.trip;
+  }
+
+  int _calculateTripDays() {
+    try {
+      final startParts = currentTrip.startDate.split('/');
+      final endParts = currentTrip.endDate.split('/');
+      
+      final startDate = DateTime(
+        int.parse(startParts[2]),
+        int.parse(startParts[0]),
+        int.parse(startParts[1]),
+      );
+      
+      final endDate = DateTime(
+        int.parse(endParts[2]),
+        int.parse(endParts[0]),
+        int.parse(endParts[1]),
+      );
+      
+      final difference = endDate.difference(startDate).inDays;
+      return difference + 1;
+    } catch (e) {
+      return 3;
+    }
   }
 
   @override
@@ -41,7 +69,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                   width: double.infinity,
                   color: Colors.grey.shade300,
                   child: Image.asset(
-                    widget.trip.image,
+                    currentTrip.image,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -104,7 +132,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.trip.title,
+                    currentTrip.title,
                     style: GoogleFonts.poppins(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.w600,
@@ -117,7 +145,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           size: 16.sp, color: Colors.grey.shade600),
                       SizedBox(width: 6.w),
                       Text(
-                        widget.trip.destination,
+                        currentTrip.destination,
                         style: GoogleFonts.poppins(
                           fontSize: 14.sp,
                           color: Colors.grey.shade600,
@@ -132,7 +160,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           size: 16.sp, color: Colors.grey.shade600),
                       SizedBox(width: 6.w),
                       Text(
-                        '${widget.trip.startDate} - ${widget.trip.endDate}',
+                        '${currentTrip.startDate} - ${currentTrip.endDate}',
                         style: GoogleFonts.poppins(
                           fontSize: 14.sp,
                           color: Colors.grey.shade600,
@@ -243,103 +271,94 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
     );
   }
 
-List<Widget> _buildActivitiesByDay() {
-  List<Widget> widgets = [];
+  List<Widget> _buildActivitiesByDay() {
+    List<Widget> widgets = [];
 
-  if (activities.isEmpty) {
-    widgets.add(
-      Padding(
-        padding: EdgeInsets.symmetric(vertical: 32.h),
-        child: Center(
-          child: Text(
-            'No activities yet. Add one to get started!',
-            style: GoogleFonts.poppins(
-              fontSize: 14.sp,
-              color: Colors.grey.shade500,
-            ),
-          ),
-        ),
-      ),
-    );
-  } else {
-    // Group activities by day
-    final groupedByDay = <String, List<Activity>>{};
-    for (var activity in activities) {
-      if (!groupedByDay.containsKey(activity.day)) {
-        groupedByDay[activity.day] = [];
-      }
-      groupedByDay[activity.day]!.add(activity);
-    }
-
-    // Sort days (Day 1, Day 2, etc.)
-    final sortedDays = groupedByDay.keys.toList()
-      ..sort((a, b) {
-        final aNum = int.tryParse(a.replaceAll(RegExp(r'\D'), '')) ?? 0;
-        final bNum = int.tryParse(b.replaceAll(RegExp(r'\D'), '')) ?? 0;
-        return aNum.compareTo(bNum);
-      });
-
-    for (var day in sortedDays) {
-      final dayActivities = groupedByDay[day]!;
-
-      // ← SORT ACTIVITIES BY TIME (AM first, then PM, chronologically)
-      dayActivities.sort((a, b) {
-        final timeA = _parseTime(a.time);
-        final timeB = _parseTime(b.time);
-        return timeA.compareTo(timeB);
-      });
-
-      // Day header
+    if (activities.isEmpty) {
       widgets.add(
         Padding(
-          padding: EdgeInsets.only(top: 16.h, bottom: 12.h),
-          child: Text(
-            day,
-            style: GoogleFonts.poppins(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
+          padding: EdgeInsets.symmetric(vertical: 32.h),
+          child: Center(
+            child: Text(
+              'No activities yet. Add one to get started!',
+              style: GoogleFonts.poppins(
+                fontSize: 14.sp,
+                color: Colors.grey.shade500,
+              ),
             ),
           ),
         ),
       );
+    } else {
+      final groupedByDay = <String, List<Activity>>{};
+      for (var activity in activities) {
+        if (!groupedByDay.containsKey(activity.day)) {
+          groupedByDay[activity.day] = [];
+        }
+        groupedByDay[activity.day]!.add(activity);
+      }
 
-      // Activities for this day
-      for (var activity in dayActivities) {
-        widgets.add(_buildActivityCard(activity));
-        widgets.add(SizedBox(height: 12.h));
+      final sortedDays = groupedByDay.keys.toList()
+        ..sort((a, b) {
+          final aNum = int.tryParse(a.replaceAll(RegExp(r'\D'), '')) ?? 0;
+          final bNum = int.tryParse(b.replaceAll(RegExp(r'\D'), '')) ?? 0;
+          return aNum.compareTo(bNum);
+        });
+
+      for (var day in sortedDays) {
+        final dayActivities = groupedByDay[day]!;
+
+        dayActivities.sort((a, b) {
+          final timeA = _parseTime(a.time);
+          final timeB = _parseTime(b.time);
+          return timeA.compareTo(timeB);
+        });
+
+        widgets.add(
+          Padding(
+            padding: EdgeInsets.only(top: 16.h, bottom: 12.h),
+            child: Text(
+              day,
+              style: GoogleFonts.poppins(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ),
+        );
+
+        for (var activity in dayActivities) {
+          widgets.add(_buildActivityCard(activity));
+          widgets.add(SizedBox(height: 12.h));
+        }
       }
     }
+
+    return widgets;
   }
 
-  return widgets;
-}
+  int _parseTime(String timeString) {
+    try {
+      final parts = timeString.split(' ');
+      final timePart = parts[0];
+      final period = parts.length > 1 ? parts[1] : 'AM';
 
-// ← ADD THIS METHOD
-int _parseTime(String timeString) {
-  // timeString format: "07:00 AM" or "1:00 PM"
-  try {
-    final parts = timeString.split(' ');
-    final timePart = parts[0]; // "07:00" or "1:00"
-    final period = parts.length > 1 ? parts[1] : 'AM'; // "AM" or "PM"
+      final timeSplit = timePart.split(':');
+      int hour = int.parse(timeSplit[0]);
+      int minute = int.parse(timeSplit.length > 1 ? timeSplit[1] : '0');
 
-    final timeSplit = timePart.split(':');
-    int hour = int.parse(timeSplit[0]);
-    int minute = int.parse(timeSplit.length > 1 ? timeSplit[1] : '0');
+      if (period == 'AM') {
+        if (hour == 12) hour = 0;
+      } else {
+        if (hour != 12) hour += 12;
+      }
 
-    // Convert to 24-hour format for proper sorting
-    if (period == 'AM') {
-      if (hour == 12) hour = 0; // 12:00 AM is midnight
-    } else {
-      if (hour != 12) hour += 12; // 1:00 PM onwards
+      return hour * 60 + minute;
+    } catch (e) {
+      return 0;
     }
-
-    // Return total minutes for accurate sorting
-    return hour * 60 + minute;
-  } catch (e) {
-    return 0; // Default to 00:00 if parsing fails
   }
-}
 
   Widget _buildActivityCard(Activity activity) {
     return GestureDetector(
@@ -457,40 +476,32 @@ int _parseTime(String timeString) {
     );
   }
 
-void _addActivity() {
-  // Generate list of available days (Day 1, Day 2, Day 3, etc.)
-  Set<String> existingDays = {};
-  for (var activity in activities) {
-    existingDays.add(activity.day);
+  void _addActivity() {
+    int tripDays = _calculateTripDays();
+    
+    List<String> daysList = [];
+    for (int i = 1; i <= tripDays; i++) {
+      daysList.add('Day $i');
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => EditActivityModal(
+        activity: null,
+        tripId: currentTrip.title,
+        onSave: (Activity newActivity) {
+          setState(() {
+            activities.add(newActivity);
+          });
+        },
+        existingActivitiesCount: activities.length,
+        availableDays: daysList,
+        existingActivities: activities,
+        tripStartDate: currentTrip.startDate,
+        tripEndDate: currentTrip.endDate,
+      ),
+    );
   }
-  
-  // Add option for next new day
-  List<String> daysList = existingDays.toList();
-  daysList.sort((a, b) {
-    final aNum = int.tryParse(a.replaceAll(RegExp(r'\D'), '')) ?? 0;
-    final bNum = int.tryParse(b.replaceAll(RegExp(r'\D'), '')) ?? 0;
-    return aNum.compareTo(bNum);
-  });
-  
-  // Add next day option
-  int nextDayNum = (daysList.isEmpty) ? 1 : (int.tryParse(daysList.last.replaceAll(RegExp(r'\D'), '')) ?? 0) + 1;
-  daysList.add('Day $nextDayNum');
-  
-  showDialog(
-    context: context,
-    builder: (context) => EditActivityModal(
-      activity: null,
-      tripId: widget.trip.title,
-      onSave: (Activity newActivity) {
-        setState(() {
-          activities.add(newActivity);
-        });
-      },
-      existingActivitiesCount: activities.length,
-      availableDays: daysList, // ← ADD THIS
-    ),
-  );
-}
 
   void _showActivityOptions(Activity activity) {
     showModalBottomSheet(
@@ -520,41 +531,34 @@ void _addActivity() {
     );
   }
 
-void _editActivity(Activity activity) {
-  // Generate list of available days
-  Set<String> existingDays = {};
-  for (var act in activities) {
-    existingDays.add(act.day);
+  void _editActivity(Activity activity) {
+    int tripDays = _calculateTripDays();
+    
+    List<String> daysList = [];
+    for (int i = 1; i <= tripDays; i++) {
+      daysList.add('Day $i');
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => EditActivityModal(
+        activity: activity,
+        tripId: currentTrip.title,
+        onSave: (Activity updatedActivity) {
+          setState(() {
+            final index = activities.indexWhere((a) => a.id == activity.id);
+            if (index != -1) {
+              activities[index] = updatedActivity;
+            }
+          });
+        },
+        availableDays: daysList,
+        existingActivities: activities,
+        tripStartDate: currentTrip.startDate,
+        tripEndDate: currentTrip.endDate,
+      ),
+    );
   }
-  
-  List<String> daysList = existingDays.toList();
-  daysList.sort((a, b) {
-    final aNum = int.tryParse(a.replaceAll(RegExp(r'\D'), '')) ?? 0;
-    final bNum = int.tryParse(b.replaceAll(RegExp(r'\D'), '')) ?? 0;
-    return aNum.compareTo(bNum);
-  });
-  
-  // Add next day option
-  int nextDayNum = (daysList.isEmpty) ? 1 : (int.tryParse(daysList.last.replaceAll(RegExp(r'\D'), '')) ?? 0) + 1;
-  daysList.add('Day $nextDayNum');
-  
-  showDialog(
-    context: context,
-    builder: (context) => EditActivityModal(
-      activity: activity,
-      tripId: widget.trip.title,
-      onSave: (Activity updatedActivity) {
-        setState(() {
-          final index = activities.indexWhere((a) => a.id == activity.id);
-          if (index != -1) {
-            activities[index] = updatedActivity;
-          }
-        });
-      },
-      availableDays: daysList, // ← ADD THIS
-    ),
-  );
-}
 
   void _deleteActivity(Activity activity) {
     setState(() {
@@ -565,17 +569,56 @@ void _editActivity(Activity activity) {
     );
   }
 
-  void _editTripDetails() {
-    showDialog(
-      context: context,
-      builder: (context) => EditTripModal(
-        trip: widget.trip,
-        onSave: (Trip updatedTrip) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Trip details updated!')),
-          );
-        },
-      ),
-    );
-  }
+void _editTripDetails() {
+  showDialog(
+    context: context,
+    builder: (context) => EditTripModal(
+      trip: currentTrip,
+      onSave: (Trip updatedTrip) {
+        // Track what changed
+        List<String> changedFields = [];
+        
+        if (updatedTrip.title != currentTrip.title) {
+          changedFields.add('Title');
+        }
+        if (updatedTrip.destination != currentTrip.destination) {
+          changedFields.add('Destination');
+        }
+        if (updatedTrip.startDate != currentTrip.startDate) {
+          changedFields.add('Start Date');
+        }
+        if (updatedTrip.endDate != currentTrip.endDate) {
+          changedFields.add('End Date');
+        }
+        if (updatedTrip.budget != currentTrip.budget) {
+          changedFields.add('Budget');
+        }
+        
+        setState(() {
+          currentTrip = updatedTrip;
+        });
+        
+        // Create dynamic message
+        String notificationMessage;
+        if (changedFields.isEmpty) {
+          notificationMessage = '✓ No changes made';
+        } else if (changedFields.length == 1) {
+          notificationMessage = '✓ ${changedFields[0]} updated';
+        } else if (changedFields.length <= 3) {
+          notificationMessage = '✓ ${changedFields.join(', ')} updated';
+        } else {
+          notificationMessage = '✓ Trip updated (${changedFields.length} fields)';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(notificationMessage),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
+    ),
+  );
+}
 }

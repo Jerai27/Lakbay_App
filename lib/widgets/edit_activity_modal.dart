@@ -12,7 +12,9 @@ class EditActivityModal extends StatefulWidget {
   final String tripId;
   final int existingActivitiesCount;
   final List<String>? availableDays;
-  final List<Activity>? existingActivities; // ← ADD THIS
+  final List<Activity>? existingActivities;
+  final String? tripStartDate; // ← ADD THIS
+  final String? tripEndDate; // ← ADD THIS
 
 
   const EditActivityModal({
@@ -22,7 +24,9 @@ class EditActivityModal extends StatefulWidget {
     required this.tripId,
     this.existingActivitiesCount = 0,
     this.availableDays,
-    this.existingActivities, // ← ADD THIS
+    this.existingActivities,
+    this.tripStartDate, // ← ADD THIS
+    this.tripEndDate, // ← ADD THIS
   });
 
 
@@ -38,6 +42,7 @@ class _EditActivityModalState extends State<EditActivityModal> {
   late TextEditingController costController;
   late String selectedPeriod;
   late String selectedDay;
+  late DateTime? selectedDate; // ← ADD THIS
 
 
   @override
@@ -58,6 +63,8 @@ class _EditActivityModalState extends State<EditActivityModal> {
       selectedDay = 'Day 1';
       selectedPeriod = 'AM';
     }
+    
+    selectedDate = null; // ← ADD THIS
   }
 
 
@@ -72,18 +79,108 @@ class _EditActivityModalState extends State<EditActivityModal> {
 
 
   // ← ADD THIS METHOD
+  List<MapEntry<String, DateTime>> _generateDateRangeOptions() {
+    List<MapEntry<String, DateTime>> dateOptions = [];
+    
+    try {
+      if (widget.tripStartDate == null || widget.tripEndDate == null) {
+        return dateOptions;
+      }
+      
+      // Parse start and end dates
+      final startParts = widget.tripStartDate!.split('/');
+      final endParts = widget.tripEndDate!.split('/');
+      
+      final startDate = DateTime(
+        int.parse(startParts[2]),
+        int.parse(startParts[0]),
+        int.parse(startParts[1]),
+      );
+      
+      final endDate = DateTime(
+        int.parse(endParts[2]),
+        int.parse(endParts[0]),
+        int.parse(endParts[1]),
+      );
+      
+      // Generate dates from start to end
+      DateTime current = startDate;
+      int dayNumber = 1;
+      
+      while (current.isBefore(endDate) || current.isAtSameMomentAs(endDate)) {
+        String displayText = 'Day $dayNumber • ${current.month}/${current.day}/${current.year}';
+        dateOptions.add(MapEntry(displayText, current));
+        current = current.add(Duration(days: 1));
+        dayNumber++;
+      }
+    } catch (e) {
+      print('Error generating date range: $e');
+    }
+    
+    return dateOptions;
+  }
+
+
+  // ← ADD THIS METHOD
+  Future<void> _selectDate() async {
+    try {
+      if (widget.tripStartDate == null || widget.tripEndDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Trip dates not set')),
+        );
+        return;
+      }
+      
+      // Parse trip dates
+      final startParts = widget.tripStartDate!.split('/');
+      final endParts = widget.tripEndDate!.split('/');
+      
+      final startDate = DateTime(
+        int.parse(startParts[2]),
+        int.parse(startParts[0]),
+        int.parse(startParts[1]),
+      );
+      
+      final endDate = DateTime(
+        int.parse(endParts[2]),
+        int.parse(endParts[0]),
+        int.parse(endParts[1]),
+      );
+      
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate ?? startDate,
+        firstDate: startDate,
+        lastDate: endDate,
+      );
+      
+      if (picked != null) {
+        setState(() {
+          selectedDate = picked;
+          
+          // Calculate which day this is
+          final difference = picked.difference(startDate).inDays;
+          int dayNumber = difference + 1;
+          
+          selectedDay = 'Day $dayNumber';
+        });
+      }
+    } catch (e) {
+      print('Error selecting date: $e');
+    }
+  }
+
+
   bool _isTimeConflict(String day, String time, String period) {
     if (widget.existingActivities == null) return false;
     
     String fullTime = '$time $period';
     
     for (var activity in widget.existingActivities!) {
-      // Don't check against itself (when editing)
       if (widget.activity != null && activity.id == widget.activity!.id) {
         continue;
       }
       
-      // Check if same day and same time
       if (activity.day == day && activity.time == fullTime) {
         return true;
       }
@@ -104,7 +201,6 @@ class _EditActivityModalState extends State<EditActivityModal> {
       return;
     }
 
-    // ← ADD THIS VALIDATION
     if (_isTimeConflict(selectedDay, timeController.text, selectedPeriod)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -195,7 +291,7 @@ class _EditActivityModalState extends State<EditActivityModal> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Day Selector (Dropdown)
+                  // Day Selector (Calendar Button)
                   Text(
                     'Select Day',
                     style: GoogleFonts.poppins(
@@ -205,45 +301,38 @@ class _EditActivityModalState extends State<EditActivityModal> {
                     ),
                   ),
                   SizedBox(height: 8.h),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Colors.grey.shade300,
+                  GestureDetector(
+                    onTap: _selectDate,
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.grey.shade300),
+                        color: Colors.grey.shade50,
                       ),
-                    ),
-                    child: DropdownButton<String>(
-                      value: selectedDay,
-                      isExpanded: true,
-                      underline: SizedBox(),
-                      icon: Padding(
-                        padding: EdgeInsets.only(right: 12.w),
-                        child: Icon(
-                          Icons.arrow_drop_down,
-                          color: AppColors.brownPrimary,
-                        ),
-                      ),
-                      items: daysList.map((String day) {
-                        return DropdownMenuItem<String>(
-                          value: day,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w),
-                            child: Text(
-                              day,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade800,
-                              ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            selectedDate != null
+                                ? '$selectedDay • ${selectedDate!.month}/${selectedDate!.day}/${selectedDate!.year}'
+                                : 'Select date',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w500,
+                              color: selectedDate != null
+                                  ? Colors.grey.shade800
+                                  : Colors.grey.shade400,
                             ),
                           ),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedDay = newValue ?? 'Day 1';
-                        });
-                      },
+                          Icon(
+                            Icons.calendar_today,
+                            color: AppColors.brownPrimary,
+                            size: 18.sp,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 16.h),
