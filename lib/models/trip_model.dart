@@ -3,7 +3,7 @@ class Trip {
   final String destination;
   final String startDate;
   final String endDate;
-  final String budget;
+  final int budget;
   final String image;
 
   Trip({

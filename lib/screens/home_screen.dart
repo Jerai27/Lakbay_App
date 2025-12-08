@@ -5,6 +5,9 @@ import '../core/app_colors.dart';
 import '../models/trip_model.dart';
 import '../widgets/create_trip_modal.dart';
 import 'profile_screen.dart';
+import 'trip_detail_screen.dart';
+
+
 
 class HomeScreen extends StatefulWidget {
   final String? userName;
@@ -166,8 +169,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTripCard(Trip trip) {
-    return Container(
+ Widget _buildTripCard(Trip trip) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => TripDetailScreen(trip: trip)),
+        );
+      },
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
@@ -253,6 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

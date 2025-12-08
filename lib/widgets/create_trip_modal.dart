@@ -42,7 +42,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
     }
   }
 
-  void _createTrip() {
+    void _createTrip() {
     if (titleController.text.isEmpty ||
         destinationController.text.isEmpty ||
         startDateController.text.isEmpty ||
@@ -54,16 +54,25 @@ class _CreateTripModalState extends State<CreateTripModal> {
       return;
     }
 
-    Trip newTrip = Trip(
-      title: titleController.text,
-      destination: destinationController.text,
-      startDate: startDateController.text,
-      endDate: endDateController.text,
-      budget: budgetController.text,
-    );
+    try {
+      final int budget = int.parse(budgetController.text);
+      
+      Trip newTrip = Trip(
+        title: titleController.text,
+        destination: destinationController.text,
+        startDate: startDateController.text,
+        endDate: endDateController.text,
+        budget: budget,  
+        image: 'assets/images/default_trip.jpg',
+      );
 
-    widget.onTripCreated(newTrip);
-    Navigator.pop(context);
+      widget.onTripCreated(newTrip);
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Invalid budget format')),
+      );
+    }
   }
 
   @override
@@ -296,17 +305,17 @@ class _CreateTripModalState extends State<CreateTripModal> {
                           color: Colors.grey.shade400,
                         ),
                         prefixIcon: Padding(
-                          padding: EdgeInsets.only(left: 12.w, right: 4.w),
-                          child: Text(
-                            '₱',
-                            style: GoogleFonts.poppins(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.brownPrimary,
-                            ),
+                        padding: EdgeInsets.only(left: 12.w, right: 8.w),
+                        child: Text(
+                          '₱',
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.brownPrimary,
                           ),
                         ),
-                        prefixIconConstraints: BoxConstraints(minWidth: 30.w),
+                      ),
+                      prefixIconConstraints: BoxConstraints(minWidth: 40.w),
                         filled: true,
                         fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
