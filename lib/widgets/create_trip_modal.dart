@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../core/app_colors.dart';
 import '../models/trip_model.dart';
-
 
 class CreateTripModal extends StatefulWidget {
   final Function(Trip) onTripCreated;
 
-
   const CreateTripModal({super.key, required this.onTripCreated});
-
 
   @override
   State<CreateTripModal> createState() => _CreateTripModalState();
 }
-
 
 class _CreateTripModalState extends State<CreateTripModal> {
   final TextEditingController titleController = TextEditingController();
@@ -26,7 +24,8 @@ class _CreateTripModalState extends State<CreateTripModal> {
 
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
-
+  XFile? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void dispose() {
@@ -50,7 +49,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
         _selectedStartDate = picked;
         startDateController.text = '${picked.month}/${picked.day}/${picked.year}';
         
-        // Reset end date if it's before start date
         if (_selectedEndDate != null && _selectedEndDate!.isBefore(picked)) {
           _selectedEndDate = null;
           endDateController.text = '';
@@ -59,22 +57,20 @@ class _CreateTripModalState extends State<CreateTripModal> {
     }
   }
 
-  // ← ADD THIS METHOD
   Future<void> _selectEndDate() async {
-    // End date picker should not allow dates before start date
     DateTime firstSelectableDate = _selectedStartDate ?? DateTime.now();
     
     if (_selectedStartDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select start date first')),
+        const SnackBar(content: Text('Please select start date first')),
       );
       return;
     }
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedEndDate ?? _selectedStartDate!.add(Duration(days: 1)),
-      firstDate: _selectedStartDate!, // ← Bound to start date
+      initialDate: _selectedEndDate ?? _selectedStartDate!.add(const Duration(days: 1)),
+      firstDate: _selectedStartDate!,
       lastDate: DateTime(2030),
     );
     if (picked != null) {
@@ -85,6 +81,216 @@ class _CreateTripModalState extends State<CreateTripModal> {
     }
   }
 
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (image != null) {
+        setState(() {
+          _selectedImage = image;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✓ Image selected'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+      );
+      if (image != null) {
+        setState(() {
+          _selectedImage = image;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✓ Photo captured'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error capturing image: $e')),
+        );
+      }
+    }
+  }
+
+  void _showImageOptionsBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  
+                  // Gallery option
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImageFromGallery();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.photo_library,
+                            color: AppColors.brownPrimary,
+                            size: 28.sp,
+                          ),
+                          SizedBox(width: 16.w),
+                          Text(
+                            'Choose from Gallery',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  
+                  // Camera option
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImageFromCamera();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.camera_alt,
+                            color: AppColors.brownPrimary,
+                            size: 28.sp,
+                          ),
+                          SizedBox(width: 16.w),
+                          Text(
+                            'Take a Photo',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Delete option (only show if image exists)
+                  if (_selectedImage != null) ...[
+                    SizedBox(height: 12.h),
+                    Container(
+                      height: 1.h,
+                      color: Colors.grey.shade300,
+                    ),
+                    SizedBox(height: 12.h),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        _removeImage();
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                              size: 28.sp,
+                            ),
+                            SizedBox(width: 16.w),
+                            Text(
+                              'Remove Image',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  SizedBox(height: 12.h),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _removeImage() {
+    setState(() {
+      _selectedImage = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('✓ Image removed'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
 
   void _createTrip() {
     if (titleController.text.isEmpty ||
@@ -93,13 +299,13 @@ class _CreateTripModalState extends State<CreateTripModal> {
         endDateController.text.isEmpty ||
         budgetController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill all fields')),
+        const SnackBar(content: Text('Please fill all fields')),
       );
       return;
     }
     if (_selectedEndDate!.isBefore(_selectedStartDate!)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('⚠️ End date must be the same or after start date'),
           backgroundColor: Colors.red,
         ),
@@ -110,20 +316,18 @@ class _CreateTripModalState extends State<CreateTripModal> {
     try {
       final int budget = int.parse(budgetController.text);
       
-    Trip newTrip = Trip(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: titleController.text, 
-      destination: destinationController.text,
-      startDate: startDateController.text,
-      endDate: endDateController.text,
-      budget: double.parse(budgetController.text),
-      image: 'assets/images/default_trip.png',
-      members: [],
-      activitiesList: List.from([]),
-      expensesList: [],
-    );
-
-
+      Trip newTrip = Trip(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        title: titleController.text, 
+        destination: destinationController.text,
+        startDate: startDateController.text,
+        endDate: endDateController.text,
+        budget: double.parse(budgetController.text),
+        image: _selectedImage?.path ?? 'assets/images/default_trip.png',
+        members: [],
+        activitiesList: List.from([]),
+        expensesList: [],
+      );
 
       widget.onTripCreated(newTrip);
       Navigator.pop(context);
@@ -133,7 +337,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +385,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
                 ),
               ),
 
-
               // Body
               Padding(
                 padding: EdgeInsets.all(24.w),
@@ -190,6 +392,103 @@ class _CreateTripModalState extends State<CreateTripModal> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Image Picker Section
+                    Text(
+                      'Trip Image',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                    GestureDetector(
+                      onTap: _showImageOptionsBottomSheet,
+                      child: Container(
+                        width: double.infinity,
+                        height: 180.h,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: _selectedImage != null
+                                ? AppColors.brownPrimary
+                                : Colors.grey.shade300,
+                            width: 2,
+                          ),
+                        ),
+                        child: _selectedImage != null
+                            ? Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    child: Image.file(
+                                      File(_selectedImage!.path),
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    ),
+                                  ),
+                                  // Update overlay
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      color: Colors.black.withOpacity(0.4),
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.edit,
+                                            color: Colors.white,
+                                            size: 32.sp,
+                                          ),
+                                          SizedBox(height: 8.h),
+                                          Text(
+                                            'Tap to change image',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12.sp,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.add_photo_alternate_outlined,
+                                    size: 48.sp,
+                                    color: AppColors.brownPrimary,
+                                  ),
+                                  SizedBox(height: 12.h),
+                                  Text(
+                                    'Tap to add image',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14.sp,
+                                      color: AppColors.brownPrimary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Text(
+                                    'Gallery or Camera',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12.sp,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+
                     // Trip Title
                     Text(
                       'Trip Title',
@@ -221,9 +520,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       style: GoogleFonts.poppins(fontSize: 14.sp),
                     ),
 
-
                     SizedBox(height: 20.h),
-
 
                     // Destination
                     Text(
@@ -258,9 +555,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       style: GoogleFonts.poppins(fontSize: 14.sp),
                     ),
 
-
                     SizedBox(height: 20.h),
-
 
                     // Start & End Dates
                     Row(
@@ -349,11 +644,9 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       ],
                     ),
 
-
                     SizedBox(height: 20.h),
 
-
-                  // Budget
+                    // Budget
                     Text(
                       'Initial Budget (₱)',
                       style: GoogleFonts.poppins(
@@ -372,17 +665,17 @@ class _CreateTripModalState extends State<CreateTripModal> {
                           color: Colors.grey.shade400,
                         ),
                         prefixIcon: Padding(
-                        padding: EdgeInsets.only(left: 12.w, right: 8.w),
-                        child: Text(
-                          '₱',
-                          style: TextStyle(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.brownPrimary,
+                          padding: EdgeInsets.only(left: 12.w, right: 8.w),
+                          child: Text(
+                            '₱',
+                            style: TextStyle(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.brownPrimary,
+                            ),
                           ),
                         ),
-                      ),
-                      prefixIconConstraints: BoxConstraints(minWidth: 40.w),
+                        prefixIconConstraints: BoxConstraints(minWidth: 40.w),
                         filled: true,
                         fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
@@ -397,9 +690,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       style: GoogleFonts.poppins(fontSize: 14.sp),
                     ),
 
-
                     SizedBox(height: 24.h),
-
 
                     // Start Adventure Button
                     SizedBox(

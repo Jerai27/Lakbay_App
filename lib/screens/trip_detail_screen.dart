@@ -14,6 +14,7 @@ import '../models/task_model.dart';
 
 
 
+
 class TripDetailScreen extends StatefulWidget {
   final Trip trip;
 
