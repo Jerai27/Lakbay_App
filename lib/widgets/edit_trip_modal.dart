@@ -6,26 +6,71 @@ import 'dart:io';
 import '../core/app_colors.dart';
 import '../models/trip_model.dart';
 
-class CreateTripModal extends StatefulWidget {
-  final Function(Trip) onTripCreated;
+class EditTripModal extends StatefulWidget {
+  final Trip trip;
+  final Function(Trip) onSave;
 
-  const CreateTripModal({super.key, required this.onTripCreated});
+  const EditTripModal({
+    super.key,
+    required this.trip,
+    required this.onSave,
+  });
 
   @override
-  State<CreateTripModal> createState() => _CreateTripModalState();
+  State<EditTripModal> createState() => _EditTripModalState();
 }
 
-class _CreateTripModalState extends State<CreateTripModal> {
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController destinationController = TextEditingController();
-  final TextEditingController startDateController = TextEditingController();
-  final TextEditingController endDateController = TextEditingController();
-  final TextEditingController budgetController = TextEditingController();
+class _EditTripModalState extends State<EditTripModal> {
+  late TextEditingController titleController;
+  late TextEditingController destinationController;
+  late TextEditingController startDateController;
+  late TextEditingController endDateController;
+  late TextEditingController budgetController;
 
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
   XFile? _selectedImage;
+  late String _originalImagePath;
   final ImagePicker _imagePicker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    titleController = TextEditingController(text: widget.trip.title);
+    destinationController = TextEditingController(text: widget.trip.destination);
+    startDateController = TextEditingController(text: widget.trip.startDate);
+    endDateController = TextEditingController(text: widget.trip.endDate);
+    budgetController = TextEditingController(text: widget.trip.budget.toString());
+    _originalImagePath = widget.trip.image;
+    _parseStartDate();
+    _parseEndDate();
+  }
+
+  void _parseStartDate() {
+    try {
+      final parts = widget.trip.startDate.split('/');
+      _selectedStartDate = DateTime(
+        int.parse(parts[2]),
+        int.parse(parts[0]),
+        int.parse(parts[1]),
+      );
+    } catch (e) {
+      _selectedStartDate = DateTime.now();
+    }
+  }
+
+  void _parseEndDate() {
+    try {
+      final parts = widget.trip.endDate.split('/');
+      _selectedEndDate = DateTime(
+        int.parse(parts[2]),
+        int.parse(parts[0]),
+        int.parse(parts[1]),
+      );
+    } catch (e) {
+      _selectedEndDate = DateTime.now();
+    }
+  }
 
   @override
   void dispose() {
@@ -48,7 +93,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
       setState(() {
         _selectedStartDate = picked;
         startDateController.text = '${picked.month}/${picked.day}/${picked.year}';
-        
+
         if (_selectedEndDate != null && _selectedEndDate!.isBefore(picked)) {
           _selectedEndDate = null;
           endDateController.text = '';
@@ -58,8 +103,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
   }
 
   Future<void> _selectEndDate() async {
-    DateTime firstSelectableDate = _selectedStartDate ?? DateTime.now();
-    
     if (_selectedStartDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select start date first')),
@@ -152,7 +195,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Handle bar
                   Container(
                     width: 40.w,
                     height: 4.h,
@@ -162,8 +204,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
                     ),
                   ),
                   SizedBox(height: 24.h),
-                  
-                  // Gallery option
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
@@ -196,8 +236,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
                     ),
                   ),
                   SizedBox(height: 12.h),
-                  
-                  // Camera option
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
@@ -229,9 +267,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       ),
                     ),
                   ),
-                  
-                  // Delete option (only show if image exists)
-                  if (_selectedImage != null) ...[
+                  if (_selectedImage != null || _originalImagePath.isNotEmpty) ...[
                     SizedBox(height: 12.h),
                     Container(
                       height: 1.h,
@@ -283,6 +319,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
   void _removeImage() {
     setState(() {
       _selectedImage = null;
+      _originalImagePath = '';
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -292,7 +329,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
     );
   }
 
-  void _createTrip() {
+  void _updateTrip() {
     if (titleController.text.isEmpty ||
         destinationController.text.isEmpty ||
         startDateController.text.isEmpty ||
@@ -303,6 +340,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
       );
       return;
     }
+
     if (_selectedEndDate!.isBefore(_selectedStartDate!)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -314,22 +352,20 @@ class _CreateTripModalState extends State<CreateTripModal> {
     }
 
     try {
-      final int budget = int.parse(budgetController.text);
-      
-      Trip newTrip = Trip(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: titleController.text, 
+      Trip updatedTrip = Trip(
+        id: widget.trip.id,
+        title: titleController.text,
         destination: destinationController.text,
         startDate: startDateController.text,
         endDate: endDateController.text,
         budget: double.parse(budgetController.text),
-        image: _selectedImage?.path ?? 'assets/images/default_trip.png',
-        members: [],
-        activitiesList: List.from([]),
-        expensesList: [],
+        image: _selectedImage?.path ?? _originalImagePath ?? 'assets/images/default_trip.png',
+        members: widget.trip.members,
+       // activitiesList: widget.trip.activitiesList,
+       // expensesList: widget.trip.expensesList,
       );
 
-      widget.onTripCreated(newTrip);
+      widget.onSave(updatedTrip);
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -340,6 +376,8 @@ class _CreateTripModalState extends State<CreateTripModal> {
 
   @override
   Widget build(BuildContext context) {
+    final currentImagePath = _selectedImage?.path ?? _originalImagePath;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -352,7 +390,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
                 decoration: BoxDecoration(
@@ -366,7 +403,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Plan New Trip',
+                      'Edit Trip',
                       style: GoogleFonts.poppins(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w600,
@@ -384,15 +421,12 @@ class _CreateTripModalState extends State<CreateTripModal> {
                   ],
                 ),
               ),
-
-              // Body
               Padding(
                 padding: EdgeInsets.all(24.w),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Image Picker Section
                     Text(
                       'Trip Image',
                       style: GoogleFonts.poppins(
@@ -410,25 +444,37 @@ class _CreateTripModalState extends State<CreateTripModal> {
                           color: Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
-                            color: _selectedImage != null
+                            color: currentImagePath.isNotEmpty
                                 ? AppColors.brownPrimary
                                 : Colors.grey.shade300,
                             width: 2,
                           ),
                         ),
-                        child: _selectedImage != null
+                        child: currentImagePath.isNotEmpty
                             ? Stack(
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(12.r),
-                                    child: Image.file(
-                                      File(_selectedImage!.path),
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    ),
+                                    child: currentImagePath.startsWith('/')
+                                        ? Image.file(
+                                            File(currentImagePath),
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                          )
+                                        : Image.asset(
+                                            currentImagePath,
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Container(
+                                                color: Colors.grey.shade300,
+                                                child: Icon(Icons.image_not_supported),
+                                              );
+                                            },
+                                          ),
                                   ),
-                                  // Update overlay
                                   Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12.r),
@@ -488,8 +534,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       ),
                     ),
                     SizedBox(height: 20.h),
-
-                    // Trip Title
                     Text(
                       'Trip Title',
                       style: GoogleFonts.poppins(
@@ -519,10 +563,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       ),
                       style: GoogleFonts.poppins(fontSize: 14.sp),
                     ),
-
                     SizedBox(height: 20.h),
-
-                    // Destination
                     Text(
                       'Destination',
                       style: GoogleFonts.poppins(
@@ -554,10 +595,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       ),
                       style: GoogleFonts.poppins(fontSize: 14.sp),
                     ),
-
                     SizedBox(height: 20.h),
-
-                    // Start & End Dates
                     Row(
                       children: [
                         Expanded(
@@ -643,10 +681,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                         ),
                       ],
                     ),
-
                     SizedBox(height: 20.h),
-
-                    // Budget
                     Text(
                       'Initial Budget (₱)',
                       style: GoogleFonts.poppins(
@@ -689,14 +724,11 @@ class _CreateTripModalState extends State<CreateTripModal> {
                       ),
                       style: GoogleFonts.poppins(fontSize: 14.sp),
                     ),
-
                     SizedBox(height: 24.h),
-
-                    // Start Adventure Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _createTrip,
+                        onPressed: _updateTrip,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.brownPrimary,
                           padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -705,7 +737,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                           ),
                         ),
                         child: Text(
-                          'Start Adventure',
+                          'Update Trip',
                           style: GoogleFonts.poppins(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,

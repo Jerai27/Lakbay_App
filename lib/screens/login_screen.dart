@@ -1,8 +1,8 @@
 // lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';  // ← ADD THIS
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/app_colors.dart';
 import '../widgets/custom_textfield.dart';
@@ -10,9 +10,28 @@ import 'signup_screen.dart';
 import '../widgets/forgot_password_modal.dart';
 import 'home_screen.dart';
 
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Set status bar to light background with dark icons
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Color(0xFFF5F5F5),  // Light gray background
+        statusBarIconBrightness: Brightness.dark,  // Dark icons
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +76,9 @@ class LoginScreen extends StatelessWidget {
                     children: [
                       Text('Welcome Back!',
                           style: GoogleFonts.poppins(
-                              fontSize: 28.sp, fontWeight: FontWeight.bold)),
+                              fontSize: 28.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87)),
                       Text('Sign in to continue your travel planning',
                           style: GoogleFonts.poppins(
                               fontSize: 14.sp, color: AppColors.textGray)),
@@ -75,39 +96,42 @@ class LoginScreen extends StatelessWidget {
                       ),
 
                       Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const ForgotPasswordModal(),
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const ForgotPasswordModal(),
+                            );
+                          },
+                          child: Text('Forgot Password?',
+                              style: GoogleFonts.poppins(
+                                  color: AppColors.brownPrimary)),
+                        ),
+                      ),
+
+                      ElevatedButton(
+                        onPressed: () {
+                          String userEmail = 'stefani';
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HomeScreen(userName: userEmail),
+                            ),
                           );
                         },
-                        child: Text('Forgot Password?',
-                          style: GoogleFonts.poppins(
-                          color: AppColors.brownPrimary)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.brownPrimary,
+                          minimumSize: Size(double.infinity, 60.h),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.r)),
+                        ),
+                        child: Text('Sign In',
+                            style: GoogleFonts.poppins(
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white)),
                       ),
-                    ),
-
-
-                     ElevatedButton(
-                      onPressed: () {
-                        String userEmail = 'stefani'; // Get from your email controller later
-                        Get.to(() => HomeScreen(userName: userEmail));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.brownPrimary,
-                        minimumSize: Size(double.infinity, 60.h),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.r)),
-                      ),
-                      child: Text('Sign In',
-                          style: GoogleFonts.poppins(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white)),
-                    ),
-
 
                       SizedBox(height: 30.h),
                       Text('Or continue with',
@@ -121,7 +145,8 @@ class LoginScreen extends StatelessWidget {
                         icon: SvgPicture.asset('assets/icons/google.svg',
                             height: 24.h),
                         label: Text('Continue with Google',
-                            style: GoogleFonts.poppins(fontSize: 16.sp)),
+                            style: GoogleFonts.poppins(
+                                fontSize: 16.sp, color: Colors.black87)),
                         style: OutlinedButton.styleFrom(
                           minimumSize: Size(double.infinity, 60.h),
                           side: BorderSide(color: Colors.brown.shade200),
@@ -135,9 +160,16 @@ class LoginScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text("Don't have an account? ",
-                              style: GoogleFonts.poppins()),
+                              style: GoogleFonts.poppins(color: Colors.black87)),
                           GestureDetector(
-                            onTap: () => Get.to(() => const SignUpScreen()),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SignUpScreen(),
+                                ),
+                              );
+                            },
                             child: Text('Sign Up',
                                 style: GoogleFonts.poppins(
                                     color: AppColors.brownPrimary,
