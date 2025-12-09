@@ -26,9 +26,13 @@ class _EditTripModalState extends State<EditTripModal> {
   late TextEditingController startDateController;
   late TextEditingController endDateController;
   late TextEditingController budgetController;
+  late TextEditingController departureTimeController;
+  late TextEditingController arrivalTimeController;
 
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
+  TimeOfDay? _selectedDepartureTime;
+  TimeOfDay? _selectedArrivalTime;
   XFile? _selectedImage;
   late String _originalImagePath;
   final ImagePicker _imagePicker = ImagePicker();
@@ -41,6 +45,8 @@ class _EditTripModalState extends State<EditTripModal> {
     startDateController = TextEditingController(text: widget.trip.startDate);
     endDateController = TextEditingController(text: widget.trip.endDate);
     budgetController = TextEditingController(text: widget.trip.budget.toString());
+    departureTimeController = TextEditingController(text: widget.trip.departureTime ?? '');
+    arrivalTimeController = TextEditingController(text: widget.trip.arrivalTime ?? '');
     _originalImagePath = widget.trip.image;
     _parseStartDate();
     _parseEndDate();
@@ -79,6 +85,8 @@ class _EditTripModalState extends State<EditTripModal> {
     startDateController.dispose();
     endDateController.dispose();
     budgetController.dispose();
+    departureTimeController.dispose();
+    arrivalTimeController.dispose();
     super.dispose();
   }
 
@@ -122,6 +130,46 @@ class _EditTripModalState extends State<EditTripModal> {
         endDateController.text = '${picked.month}/${picked.day}/${picked.year}';
       });
     }
+  }
+
+  Future<void> _selectDepartureTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedDepartureTime ?? TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDepartureTime = picked;
+        departureTimeController.text = picked.format(context);
+      });
+    }
+  }
+
+  Future<void> _selectArrivalTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedArrivalTime ?? TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedArrivalTime = picked;
+        arrivalTimeController.text = picked.format(context);
+      });
+    }
+  }
+
+  void _clearDepartureTime() {
+    setState(() {
+      _selectedDepartureTime = null;
+      departureTimeController.clear();
+    });
+  }
+
+  void _clearArrivalTime() {
+    setState(() {
+      _selectedArrivalTime = null;
+      arrivalTimeController.clear();
+    });
   }
 
   Future<void> _pickImageFromGallery() async {
@@ -358,11 +406,14 @@ class _EditTripModalState extends State<EditTripModal> {
         destination: destinationController.text,
         startDate: startDateController.text,
         endDate: endDateController.text,
-        budget: double.parse(budgetController.text),
+        budget: int.parse(budgetController.text),
         image: _selectedImage?.path ?? _originalImagePath ?? 'assets/images/default_trip.png',
         members: widget.trip.members,
-       // activitiesList: widget.trip.activitiesList,
-       // expensesList: widget.trip.expensesList,
+        activitiesList: widget.trip.activities,
+        expensesList: widget.trip.expenses,
+        tasksList: widget.trip.tasks,
+        departureTime: departureTimeController.text.isNotEmpty ? departureTimeController.text : null,
+        arrivalTime: arrivalTimeController.text.isNotEmpty ? arrivalTimeController.text : null,
       );
 
       widget.onSave(updatedTrip);
@@ -663,6 +714,106 @@ class _EditTripModalState extends State<EditTripModal> {
                                   ),
                                   prefixIcon: Icon(Icons.calendar_today,
                                       color: AppColors.brownPrimary),
+                                  filled: true,
+                                  fillColor: Colors.grey.shade100,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16.w,
+                                    vertical: 14.h,
+                                  ),
+                                ),
+                                style: GoogleFonts.poppins(fontSize: 14.sp),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Departure Time',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 10.h),
+                              TextField(
+                                controller: departureTimeController,
+                                readOnly: true,
+                                onTap: () => _selectDepartureTime(),
+                                decoration: InputDecoration(
+                                  hintText: 'Select time',
+                                  hintStyle: GoogleFonts.poppins(
+                                    fontSize: 14.sp,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  prefixIcon: Icon(Icons.access_time,
+                                      color: AppColors.brownPrimary),
+                                  suffixIcon: departureTimeController.text.isNotEmpty
+                                      ? GestureDetector(
+                                          onTap: _clearDepartureTime,
+                                          child: Icon(Icons.close,
+                                              color: Colors.red, size: 18.sp),
+                                        )
+                                      : null,
+                                  filled: true,
+                                  fillColor: Colors.grey.shade100,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16.w,
+                                    vertical: 14.h,
+                                  ),
+                                ),
+                                style: GoogleFonts.poppins(fontSize: 14.sp),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Arrival Time',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 10.h),
+                              TextField(
+                                controller: arrivalTimeController,
+                                readOnly: true,
+                                onTap: () => _selectArrivalTime(),
+                                decoration: InputDecoration(
+                                  hintText: 'Select time',
+                                  hintStyle: GoogleFonts.poppins(
+                                    fontSize: 14.sp,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  prefixIcon: Icon(Icons.access_time,
+                                      color: AppColors.brownPrimary),
+                                  suffixIcon: arrivalTimeController.text.isNotEmpty
+                                      ? GestureDetector(
+                                          onTap: _clearArrivalTime,
+                                          child: Icon(Icons.close,
+                                              color: Colors.red, size: 18.sp),
+                                        )
+                                      : null,
                                   filled: true,
                                   fillColor: Colors.grey.shade100,
                                   border: OutlineInputBorder(
