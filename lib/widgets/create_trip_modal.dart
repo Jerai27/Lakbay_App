@@ -336,7 +336,7 @@ class _CreateTripModalState extends State<CreateTripModal> {
                   children: [
                     // Trip Image
                     Text(
-                      'Trip Image',
+                      'Cover Photo',
                       style: GoogleFonts.poppins(fontSize: 14.sp, fontWeight: FontWeight.w500),
                     ),
                     SizedBox(height: 15.h),
