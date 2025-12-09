@@ -6,6 +6,7 @@ import '../models/trip_model.dart';
 import '../models/activity_model.dart';
 import '../widgets/edit_trip_modal.dart';
 import '../widgets/edit_activity_modal.dart';
+import '../screens/budget_screen.dart';
 
 
 class TripDetailScreen extends StatefulWidget {
@@ -449,14 +450,16 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
     );
   }
 
-  Widget _buildBudgetContent() {
-    return Center(
-      child: Text(
-        'Budget Tab - Coming Soon',
-        style: GoogleFonts.poppins(fontSize: 14.sp),
-      ),
-    );
-  }
+    Widget _buildBudgetContent() {
+      return BudgetScreen(
+        trip: currentTrip,
+        onTripUpdated: (updatedTrip) {
+          setState(() {
+            currentTrip = updatedTrip;
+          });
+        },
+      );
+    }
 
   Widget _buildMembersContent() {
     return Center(
@@ -496,7 +499,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
         },
         existingActivitiesCount: activities.length,
         availableDays: daysList,
-        existingActivities: activities,
+        existingActivities: activities.cast<Activity>(),
         tripStartDate: currentTrip.startDate,
         tripEndDate: currentTrip.endDate,
       ),
@@ -553,7 +556,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
           });
         },
         availableDays: daysList,
-        existingActivities: activities,
+        existingActivities: activities.cast<Activity>(),
         tripStartDate: currentTrip.startDate,
         tripEndDate: currentTrip.endDate,
       ),

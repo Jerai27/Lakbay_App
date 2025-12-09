@@ -38,8 +38,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
     super.dispose();
   }
 
-
-  // ← ADD THIS METHOD
   Future<void> _selectStartDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -99,8 +97,6 @@ class _CreateTripModalState extends State<CreateTripModal> {
       );
       return;
     }
-
-    // ← ADD THIS VALIDATION
     if (_selectedEndDate!.isBefore(_selectedStartDate!)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -114,14 +110,18 @@ class _CreateTripModalState extends State<CreateTripModal> {
     try {
       final int budget = int.parse(budgetController.text);
       
-      Trip newTrip = Trip(
-        title: titleController.text,
-        destination: destinationController.text,
-        startDate: startDateController.text,
-        endDate: endDateController.text,
-        budget: budget,  
-        image: 'assets/images/default_trip.jpg',
-      );
+    Trip newTrip = Trip(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: titleController.text, 
+      destination: destinationController.text,
+      startDate: startDateController.text,
+      endDate: endDateController.text,
+      budget: double.parse(budgetController.text),
+      image: 'assets/images/default_trip.png',
+      members: [],
+      activities: [],
+      expenses: [],
+    );
 
 
       widget.onTripCreated(newTrip);

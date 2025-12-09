@@ -1,13 +1,11 @@
 // lib/screens/signup_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';  // ← ADD THIS
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/app_colors.dart';
 import '../widgets/custom_textfield.dart';
-import 'login_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -20,6 +18,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     super.initState();
+    // Set status bar to light background with dark icons
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Color(0xFFF5F5F5),  // Light gray background
+        statusBarIconBrightness: Brightness.dark,  // Dark icons
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
   }
 
   @override
@@ -122,16 +130,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         children: [
                           Text('Already have an account? ',
                               style: GoogleFonts.poppins(color: Colors.black87)),
-                         GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);  // Goes back to LoginScreen
-                          },
-                          child: Text('Sign In',
-                              style: GoogleFonts.poppins(
-                                  color: AppColors.brownPrimary,
-                                  fontWeight: FontWeight.w600)),
-                        ),
-
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Sign In',
+                                style: GoogleFonts.poppins(
+                                    color: AppColors.brownPrimary,
+                                    fontWeight: FontWeight.w600)),
+                          ),
                         ],
                       ),
                     ],

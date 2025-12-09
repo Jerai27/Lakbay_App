@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';  // ← ADD THIS
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/app_colors.dart';
 import '../widgets/custom_textfield.dart';
@@ -11,7 +10,7 @@ import 'signup_screen.dart';
 import '../widgets/forgot_password_modal.dart';
 import 'home_screen.dart';
 
-class LoginScreen extends StatefulWidget {  // ← CHANGE TO StatefulWidget
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
@@ -22,6 +21,16 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    // Set status bar to light background with dark icons
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Color(0xFFF5F5F5),  // Light gray background
+        statusBarIconBrightness: Brightness.dark,  // Dark icons
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
   }
 
   @override
@@ -50,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            // White Card (rest of your code remains the same)
+            // White Card
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -123,7 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white)),
                       ),
-
 
                       SizedBox(height: 30.h),
                       Text('Or continue with',

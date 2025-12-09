@@ -171,15 +171,19 @@ void _saveTrip() {
   }
 
  try {
-    final updatedTrip = Trip(
+final updatedTrip = Trip(
+      id: widget.trip.id,
       title: titleController.text,
       destination: destinationController.text,
       startDate: startDateController.text,
       endDate: endDateController.text,
-      budget: int.parse(budgetController.text),
+      budget: double.parse(budgetController.text),
       image: widget.trip.image,
+      members: widget.trip.members,
+      activities: widget.trip.activities,
+      expenses: widget.trip.expenses,
     );
-
+    
     widget.onSave(updatedTrip);
     Navigator.pop(context);
   } catch (e) {
