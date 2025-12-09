@@ -9,27 +9,39 @@ import 'profile_screen.dart';
 import 'trip_detail_screen.dart';
 
 
-
 class HomeScreen extends StatefulWidget {
   final String? userName;
 
+
   const HomeScreen({super.key, this.userName});
+
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+
 class _HomeScreenState extends State<HomeScreen> {
   late String displayName;
   late List<Trip> trips;
+  String? _selectedTripIdForDelete;
+  int _currentNavIndex = 0;
+  late List<Widget> _screens;
+
 
 @override
   void initState() {
     super.initState();
     displayName = widget.userName ?? 'Stefani';
     trips = [];
+    _screens = [
+    
+      _buildTripsContent(),
+      const ProfileScreen(),
+    ];
   }
-  
+
+
   void _showCreateTripModal() {
     showDialog(
       context: context,
@@ -43,134 +55,266 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+
+  void _showDeleteConfirmation(Trip trip) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Delete Trip?',
+          style: GoogleFonts.poppins(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${trip.title}"? This action cannot be undone.',
+          style: GoogleFonts.poppins(fontSize: 14.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteTrip(trip);
+            },
+            child: Text(
+              'Delete',
+              style: GoogleFonts.poppins(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  void _deleteTrip(Trip trip) {
+    setState(() {
+      trips.removeWhere((t) => t.id == trip.id);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '✓ "${trip.title}" deleted',
+          style: GoogleFonts.poppins(),
+        ),
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+
+  void _onNavTap(int index) {
+    setState(() {
+      _currentNavIndex = index;
+    });
+  }
+
+
+  Widget _buildHomeContent() {
+    return SafeArea(
+      child: Column(
+        children: [
+          Container(
+            color: AppColors.brownPrimary,
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 35.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Kamusta, ',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    Text(
+                      '$displayName!',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text('👋', style: TextStyle(fontSize: 18.sp)),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Plan your next adventure',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14.sp,
+                    color: Colors.white70,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Row(
+                    children: [
+                      Icon(Icons.search, color: Colors.grey.shade400),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search trips by name or destination...',
+                            hintStyle: GoogleFonts.poppins(
+                              fontSize: 14.sp,
+                              color: Colors.grey.shade400,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: trips.isEmpty
+                ? Center(
+                    child: Text(
+                      'No trips yet. Create one!',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.all(24.w),
+                    itemCount: trips.length,
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          _buildTripCard(trips[index]),
+                          if (index < trips.length - 1) SizedBox(height: 16.h),
+                        ],
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildTripsContent() {
+    return SafeArea(
+      child: Column(
+        children: [
+          Container(
+            color: AppColors.brownPrimary,
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 35.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'My Trips',
+                  style: GoogleFonts.poppins(
+                    fontSize: 28.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Manage your travel plans',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14.sp,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: trips.isEmpty
+                ? Center(
+                    child: Text(
+                      'No trips yet. Create one!',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.all(24.w),
+                    itemCount: trips.length,
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          _buildTripCard(trips[index]),
+                          if (index < trips.length - 1) SizedBox(height: 16.h),
+                        ],
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              color: AppColors.brownPrimary,
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 35.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Kamusta, ',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16.sp,
-                          color: Colors.white70,
-                        ),
-                      ),
-                      Text(
-                        '$displayName!',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Text('👋', style: TextStyle(fontSize: 18.sp)),
-                    ],
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'Plan your next adventure',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14.sp,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: Row(
-                      children: [
-                        Icon(Icons.search, color: Colors.grey.shade400),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Search trips by name or destination...',
-                              hintStyle: GoogleFonts.poppins(
-                                fontSize: 14.sp,
-                                color: Colors.grey.shade400,
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(vertical: 12.h),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: trips.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No trips yet. Create one!',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16.sp,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.all(24.w),
-                      itemCount: trips.length,
-                      itemBuilder: (context, index) {
-                        return Column(
-                          children: [
-                            _buildTripCard(trips[index]),
-                            if (index < trips.length - 1) SizedBox(height: 16.h),
-                          ],
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.brownPrimary,
-        onPressed: _showCreateTripModal,
-        child: Icon(Icons.add, color: Colors.white),
-      ),
+      body: _screens[_currentNavIndex],
+      floatingActionButton: _currentNavIndex == 0 || _currentNavIndex == 2
+          ? FloatingActionButton(
+              backgroundColor: AppColors.brownPrimary,
+              onPressed: _showCreateTripModal,
+              child: Icon(Icons.add, color: Colors.white),
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         elevation: 8,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
           BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: 'Trips'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
-        currentIndex: 0,
-        onTap: (index) {
-          if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
-            );
-          }
-        },
+        currentIndex: _currentNavIndex,
+        onTap: _onNavTap,
       ),
     );
   }
 
- Widget _buildTripCard(Trip trip) {
+
+  Widget _buildTripCard(Trip trip) {
+    final isSelected = _selectedTripIdForDelete == trip.id;
+
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
