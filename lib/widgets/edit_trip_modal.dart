@@ -171,7 +171,7 @@ void _saveTrip() {
   }
 
  try {
-final updatedTrip = Trip(
+    final updatedTrip = Trip(
       id: widget.trip.id,
       title: titleController.text,
       destination: destinationController.text,
@@ -180,8 +180,9 @@ final updatedTrip = Trip(
       budget: double.parse(budgetController.text),
       image: widget.trip.image,
       members: widget.trip.members,
-      activities: widget.trip.activities,
-      expenses: widget.trip.expenses,
+      activitiesList: List.from(widget.trip.activities),
+      expensesList: widget.trip.expenses,
+      tasksList: widget.trip.tasks,
     );
     
     widget.onSave(updatedTrip);

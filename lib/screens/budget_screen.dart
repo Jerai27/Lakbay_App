@@ -251,7 +251,7 @@ Container(
                 color: Colors.grey.shade800,
               ),
             ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 1.h),
             Text(
               'Split among ${memberCount} member${memberCount > 1 ? 's' : ''}',
               style: GoogleFonts.poppins(
@@ -308,7 +308,7 @@ Container(
             Text(
               '⚠️ This amount updates automatically as expenses are added',
               style: GoogleFonts.poppins(
-                fontSize: 11.sp,
+                fontSize: 10.sp,
                 color: Colors.grey.shade600,
                 fontStyle: FontStyle.italic,
               ),

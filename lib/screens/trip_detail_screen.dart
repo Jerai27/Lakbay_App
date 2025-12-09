@@ -7,6 +7,11 @@ import '../models/activity_model.dart';
 import '../widgets/edit_trip_modal.dart';
 import '../widgets/edit_activity_modal.dart';
 import '../screens/budget_screen.dart';
+import '../screens/members_screen.dart';
+import '../models/member_model.dart';
+import '../screens/tasks_screen.dart';
+import '../models/task_model.dart';
+
 
 
 class TripDetailScreen extends StatefulWidget {
@@ -461,24 +466,27 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
       );
     }
 
-  Widget _buildMembersContent() {
-    return Center(
-      child: Text(
-        'Members Tab - Coming Soon',
-        style: GoogleFonts.poppins(fontSize: 14.sp),
-      ),
-    );
-  }
+Widget _buildMembersContent() {
+  return MembersScreen(
+    trip: currentTrip,
+    onTripUpdated: (updatedTrip) {
+      setState(() {
+        currentTrip = updatedTrip;
+      });
+    },
+  );
+}
 
-  Widget _buildTaskContent() {
-    return Center(
-      child: Text(
-        'Task Tab - Coming Soon',
-        style: GoogleFonts.poppins(fontSize: 14.sp),
-      ),
-    );
-  }
-
+Widget _buildTaskContent() {
+  return TasksScreen(
+    trip: currentTrip,
+    onTripUpdated: (updatedTrip) {
+      setState(() {
+        currentTrip = updatedTrip;
+      });
+    },
+  );
+}
   void _addActivity() {
     int tripDays = _calculateTripDays();
     

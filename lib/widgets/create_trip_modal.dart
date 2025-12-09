@@ -119,9 +119,10 @@ class _CreateTripModalState extends State<CreateTripModal> {
       budget: double.parse(budgetController.text),
       image: 'assets/images/default_trip.png',
       members: [],
-      activities: [],
-      expenses: [],
+      activitiesList: List.from([]),
+      expensesList: [],
     );
+
 
 
       widget.onTripCreated(newTrip);

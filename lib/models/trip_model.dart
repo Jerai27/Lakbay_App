@@ -1,4 +1,6 @@
-// lib/models/trip_model.dart
+import '../models/member_model.dart';  
+import '../models/task_model.dart';
+
 class Trip {
   final String? id;
   final String title;
@@ -7,9 +9,10 @@ class Trip {
   final String endDate;
   final double budget;
   final String image;
-  final List<String> members;
+  final List<Member> members;  
   final List<dynamic> activities;
   final List<Expense> expenses;
+  final List<TaskItem> tasks;
 
   Trip({
     this.id,
@@ -20,9 +23,12 @@ class Trip {
     required this.budget,
     required this.image,
     required this.members,
-    this.activities = const [],
-    this.expenses = const [],
-  });
+     List<dynamic>? activitiesList,      // ← Different param names
+      List<Expense>? expensesList,
+       List<TaskItem>? tasksList,
+})  : activities = activitiesList ?? [],
+      expenses = expensesList ?? [],
+      tasks = tasksList ?? []; 
 
   double getTotalSpent() {
     return expenses.fold(0, (sum, expense) => sum + expense.cost);
@@ -32,6 +38,7 @@ class Trip {
     return budget - getTotalSpent();
   }
 }
+
 
 class Expense {
   final String description;
