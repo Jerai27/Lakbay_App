@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "55330843004",
+    "project_id": "travel-planning-app-cc152",
+    "storage_bucket": "travel-planning-app-cc152.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:55330843004:android:eefc46c84f86407c981cf9",
+        "android_client_info": {
+          "package_name": "com.example.lakbay_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "55330843004-o9rilghd489nkolj6b3jp20k6l9revrk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lakbay_app",
+            "certificate_hash": "5581c6025b9bb76e4e4e9af201e68643efefc04a"
+          }
+        },
+        {
+          "client_id": "55330843004-m2ga3mio6b8sc0182oi3ioab6nm6u59j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfLWDAyTB1aieoRi3u8DcFXrSfVHXGNhg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "55330843004-m2ga3mio6b8sc0182oi3ioab6nm6u59j.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "55330843004-p6a24hg0tmo6keq203gfl3vpa4n4rsn4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.lakbayApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

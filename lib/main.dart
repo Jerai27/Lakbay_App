@@ -1,23 +1,28 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/login_screen.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Set status bar style IMMEDIATELY before app starts
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Set status bar style
   SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(
-      statusBarColor: Color(0xFFF5F5F5),  // ← Light gray/white background
-      statusBarIconBrightness: Brightness.dark,  // ← Dark icons
-      statusBarBrightness: Brightness.dark,
+    const SystemUiOverlayStyle(
+      statusBarColor: Color(0xFFF5F5F5),
+      statusBarIconBrightness: Brightness.dark,
       systemNavigationBarColor: Colors.white,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
-  
+
   runApp(const MyApp());
 }
 
@@ -37,11 +42,6 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
             brightness: Brightness.light,
           ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            brightness: Brightness.light,
-          ),
-          themeMode: ThemeMode.light,
           home: child,
         );
       },
@@ -49,3 +49,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
