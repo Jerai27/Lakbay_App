@@ -9,6 +9,9 @@ import '../widgets/edit_activity_modal.dart';
 import '../screens/budget_screen.dart';
 import '../screens/members_screen.dart';
 import '../models/member_model.dart';
+import '../screens/tasks_screen.dart';
+import '../models/task_model.dart';
+
 
 
 
@@ -475,15 +478,16 @@ Widget _buildMembersContent() {
   );
 }
 
-  Widget _buildTaskContent() {
-    return Center(
-      child: Text(
-        'Task Tab - Coming Soon',
-        style: GoogleFonts.poppins(fontSize: 14.sp),
-      ),
-    );
-  }
-
+Widget _buildTaskContent() {
+  return TasksScreen(
+    trip: currentTrip,
+    onTripUpdated: (updatedTrip) {
+      setState(() {
+        currentTrip = updatedTrip;
+      });
+    },
+  );
+}
   void _addActivity() {
     int tripDays = _calculateTripDays();
     

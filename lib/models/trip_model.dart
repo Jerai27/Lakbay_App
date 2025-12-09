@@ -16,10 +16,6 @@ class Trip {
   final List<TaskItem> tasks;
   final String? departureTime;
   final String? arrivalTime;
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 
   Trip({
     this.id,
@@ -30,23 +26,6 @@ class Trip {
     required this.budget,
     required this.image,
     required this.members,
-<<<<<<< Updated upstream
-    List<dynamic>? activitiesList,      
-    List<Expense>? expensesList,
-    List<TaskItem>? tasksList,
-    this.departureTime,
-    this.arrivalTime,
-  })  : activities = activitiesList ?? [],
-        expenses = expensesList ?? [],
-        tasks = tasksList ?? []; 
-
-
-  int getTotalSpent() {
-    return expenses.fold(0, (sum, expense) => sum + expense.cost.toInt());
-  }
-
-
-=======
     List<dynamic>? activitiesList,     
     List<Expense>? expensesList,        
     List<TaskItem>? tasksList,         
@@ -59,14 +38,10 @@ class Trip {
   int getTotalSpent() {
    return expenses.fold(0, (sum, expense) => sum + expense.cost.toInt());
   }
-
->>>>>>> Stashed changes
   int getRemaining() {
     return budget - getTotalSpent();
   }
 }
-
-
 
 class Expense {
   final String description;
